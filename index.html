@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TG RiN Analytics - Аналитика Telegram ботов и каналов</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary: #2c5dff;
+            --primary-light: #e6ecff;
+            --secondary: #1a3db0;
+            --accent: #00c6ff;
+            --dark: #1a1d28;
+            --dark-light: #2a2f42;
+            --light: #f8f9ff;
+            --success: #00d97e;
+            --warning: #f64e60;
+            --text: #2b2d42;
+            --text-light: #6b6f82;
+            --gray: #e1e3eb;
+            --bg: #f5f6fa;
+            --card-bg: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-dark: rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--card-bg);
+            color: var(--text);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow);
+            border-bottom: 1px solid var(--gray);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            max-width: 600px;
+            margin: 0 30px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px;
+            padding-left: 45px;
+            border-radius: 8px;
+            border: 1px solid var(--gray);
+            font-size: 1rem;
+            background-color: var(--bg);
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background-color: white;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-link {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Main Content Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 30px;
+            padding: 30px 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 90px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .sidebar-link.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .sidebar-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background-color: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            color: var(--dark);
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 93, 255, 0.25);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-gray {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .btn-gray:hover {
+            background-color: var(--gray);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .stat-change.up {
+            color: var(--success);
+        }
+
+        .stat-change.down {
+            color: var(--warning);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-light);
+            position: relative;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Table */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--bg);
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-align: left;
+            padding: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--gray);
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--bg);
+        }
+
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .channel-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .channel-name {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .channel-category {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background-color: rgba(0, 217, 126, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: rgba(246, 78, 96, 0.1);
+            color: var(--warning);
+        }
+
+        /* Charts */
+        .chart-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Categories */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .category-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.3s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px var(--shadow-dark);
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .category-name {
+            font-weight: 500;
+        }
+
+        .category-count {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 60px 0 30px;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--accent);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .copyright {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.1rem;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .social-links a:hover {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .header-nav {
+                display: none;
+            }
+            
+            .search-bar {
+                margin: 0 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .dashboard-actions {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .logo span {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">
+                <i class="fab fa-telegram"></i>
+                <span>TG RiN Analytics</span>
+            </a>
+            
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Поиск по каналам, ботам, ключевым словам...">
+            </div>
+            
+            <div class="header-nav">
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Аналитика</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Уведомления</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-star"></i>
+                    <span>Избранное</span>
+                </a>
+                <div class="user-avatar">A</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>Меню</h3>
+                <a href="#" class="sidebar-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-robot"></i>
+                    <span>Боты</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <span>Каналы</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-comments"></i>
+                    <span>Чаты</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-trophy"></i>
+                    <span>Рейтинги</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Категории</h3>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Коммерция</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Образование</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Игры</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Новости</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-bitcoin"></i>
+                    <span>Криптовалюта</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-ellipsis-h"></i>
+                    <span>Все категории</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Инструменты</h3>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Анализ аудитории</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-search-dollar"></i>
+                    <span>Поиск по ключевым словам</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-users"></i>
+                    <span>Конкурентный анализ</span>
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Мониторинг упоминаний</span>
+                    <span class="sidebar-badge">New</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Аналитика Telegram каналов</h1>
+                <div class="dashboard-actions">
+                    <button class="btn btn-gray">
+                        <i class="fas fa-calendar"></i>
+                        <span>За месяц</span>
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-filter"></i>
+                        <span>Фильтры</span>
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        <span>Добавить канал</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">
+                        <i class="fas fa-users"></i>
+                        <span>Общая аудитория</span>
+                    </div>
+                    <div class="stat-value">1,245,678</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12.5% за месяц</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">
+                        <i class="fas fa-eye"></i>
+                        <span>Охват публикаций</span>
+                    </div>
+                    <div class="stat-value">3,567,890</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8.3% за месяц</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">
+                        <i class="fas fa-heart"></i>
+                        <span>ER (Engagement Rate)</span>
+                    </div>
+                    <div class="stat-value">4.8%</div>
+                    <div class="stat-change down">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>1.2% за месяц</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">
+                        <i class="fas fa-comment"></i>
+                        <span>Средний отклик</span>
+                    </div>
+                    <div class="stat-value">2,456</div>
+                    <div class="stat-change up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5.7% за месяц</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Динамика роста подписчиков</h3>
+                    <div>
+                        <button class="btn btn-gray" style="padding: 5px 10px; font-size: 0.8rem;">7 дней</button>
+                        <button class="btn btn-gray" style="padding: 5px 10px; font-size: 0.8rem;">30 дней</button>
+                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">90 дней</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div id="growthChart"></div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active">Все каналы</div>
+                <div class="tab">Мои подписки</div>
+                <div class="tab">Избранное</div>
+                <div class="tab">Топ по ER</div>
+                <div class="tab">Топ по приросту</div>
+            </div>
+
+            <!-- Channels Table -->
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Канал</th>
+                                <th>Подписчики</th>
+                                <th>Прирост</th>
+                                <th>ER</th>
+                                <th>Цена поста</th>
+                                <th>Категория</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="channel-info">
+                                        <div class="channel-avatar">
+                                            <i class="fas fa-newspaper"></i>
+                                        </div>
+                                        <div>
+                                            <div class="channel-name">Новости IT</div>
+                                            <div class="channel-category">@it_news</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>1,245,678</td>
+                                <td>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-arrow-up"></i> 12.5%
+                                    </span>
+                                </td>
+                                <td>4.8%</td>
+                                <td>$1,200</td>
+                                <td>
+                                    <span class="badge badge-primary">Технологии</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="channel-info">
+                                        <div class="channel-avatar">
+                                            <i class="fas fa-shopping-bag"></i>
+                                        </div>
+                                        <div>
+                                            <div class="channel-name">Экономика сегодня</div>
+                                            <div class="channel-category">@economy_today</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>987,654</td>
+                                <td>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-arrow-up"></i> 8.3%
+                                    </span>
+                                </td>
+                                <td>5.2%</td>
+                                <td>$950</td>
+                                <td>
+                                    <span class="badge badge-primary">Финансы</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="channel-info">
+                                        <div class="channel-avatar">
+                                            <i class="fas fa-gamepad"></i>
+                                        </div>
+                                        <div>
+                                            <div class="channel-name">Игровой мир</div>
+                                            <div class="channel-category">@game_world</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>2,345,678</td>
+                                <td>
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-arrow-down"></i> 1.2%
+                                    </span>
+                                </td>
+                                <td>3.9%</td>
+                                <td>$2,100</td>
+                                <td>
+                                    <span class="badge badge-primary">Игры</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="channel-info">
+                                        <div class="channel-avatar">
+                                            <i class="fas fa-heartbeat"></i>
+                                        </div>
+                                        <div>
+                                            <div class="channel-name">Здоровье и спорт</div>
+                                            <div class="channel-category">@health_sport</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>543,210</td>
+                                <td>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-arrow-up"></i> 15.7%
+                                    </span>
+                                </td>
+                                <td>6.1%</td>
+                                <td>$650</td>
+                                <td>
+                                    <span class="badge badge-primary">Здоровье</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="channel-info">
+                                        <div class="channel-avatar">
+                                            <i class="fas fa-bitcoin"></i>
+                                        </div>
+                                        <div>
+                                            <div class="channel-name">Крипто аналитика</div>
+                                            <div class="channel-category">@crypto_analytics</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>876,543</td>
+                                <td>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-arrow-up"></i> 22.4%
+                                    </span>
+                                </td>
+                                <td>7.3%</td>
+                                <td>$1,500</td>
+                                <td>
+                                    <span class="badge badge-primary">Криптовалюта</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="chart-card" style="margin-top: 30px;">
+                <div class="chart-header">
+                    <h3>Популярные категории</h3>
+                    <a href="#" style="color: var(--primary); text-decoration: none; font-size: 0.9rem;">Все категории</a>
+                </div>
+                <div class="categories-grid">
+                    <a href="#" class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div>
+                            <div class="category-name">Новости</div>
+                            <div class="category-count">1,245 каналов</div>
+                        </div>
+                    </a>
+                    <a href="#" class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div>
+                            <div class="category-name">Коммерция</div>
+                            <div class="category-count">987 каналов</div>
+                        </div>
+                    </a>
+                    <a href="#" class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                        <div>
+                            <div class="category-name">Игры</div>
+                            <div class="category-count">876 каналов</div>
+                        </div>
+                    </a>
+                    <a href="#" class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-bitcoin"></i>
+                        </div>
+                        <div>
+                            <div class="category-name">Криптовалюта</div>
+                            <div class="category-count">765 каналов</div>
+                        </div>
+                    </a>
+                    <a href="#" class="category-card">
+                        <div class="category-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <div class="category-name">Здоровье</div>
+                            <div class="category-count">654 каналов</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>TG RiN Analytics</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">О проекте</a></li>
+                        <li><a href="#">Тарифы</a></li>
+                        <li><a href="#">API для разработчиков</a></li>
+                        <li><a href="#">Партнерская программа</a></li>
+                        <li><a href="#">Вакансии</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Инструменты</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Анализ каналов</a></li>
+                        <li><a href="#">Анализ ботов</a></li>
+                        <li><a href="#">Поиск по ключевым словам</a></li>
+                        <li><a href="#">Конкурентный анализ</a></li>
+                        <li><a href="#">Мониторинг упоминаний</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Ресурсы</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Блог</a></li>
+                        <li><a href="#">Документация</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Учебные материалы</a></li>
+                        <li><a href="#">Служба поддержки</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Контакты</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Telegram</a></li>
+                        <li><a href="#">Email</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="copyright">
+                    © 2023 TG RiN Analytics. Все права защищены.
+                </div>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-vk"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Growth Chart with ApexCharts
+        document.addEventListener('DOMContentLoaded', function() {
+            var growthChart = new ApexCharts(document.querySelector("#growthChart"), {
+                series: [{
+                    name: 'Подписчики',
+                    data: [1120000, 1150000, 1175000, 1190000, 1210000, 1230000, 1245678]
+                }],
+                chart: {
+                    height: '100%',
+                    type: 'area',
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: false,
+                            zoom: false,
+                            zoomin: false,
+                            zoomout: false,
+                            pan: false,
+                            reset: false
+                        }
+                    },
+                    zoom: {
+                        enabled: false
+                   
